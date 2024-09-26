@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 import uuid
+from django.db.models import Avg, Count
 
 class Category(models.Model):
     name = models.CharField(unique=True, max_length=300)
@@ -50,6 +51,11 @@ class Spot(models.Model):
     
     def __str__(self) -> str:
         return self.name
+    
+    @property
+    def average_rating(self):
+        avg_rating = self.reviews.aggregate(Avg('rating'))['rating__avg']
+        return avg_rating if avg_rating is not None else 0
 
 
 class ForumComments(models.Model):
@@ -65,11 +71,10 @@ class ForumComments(models.Model):
 
 
 class Review(models.Model):
-    RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     spot = models.ForeignKey(Spot, related_name='reviews', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='reviews', on_delete=models.CASCADE)
-    rating = models.IntegerField(choices=RATING_CHOICES)  
+    rating = models.IntegerField()  
     review_text = models.TextField(blank=True, null=True)  
     created_at = models.DateTimeField(auto_now_add=True)  
     updated_at = models.DateTimeField(auto_now=True)

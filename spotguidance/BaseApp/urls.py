@@ -1,12 +1,14 @@
 from django.urls import path
 from . import views
-from . import class_based_views
 
 urlpatterns = [
-    path('', views.api_overviews, name='api_overviews'),
-    path('Categories/', class_based_views.Category_list.as_view(), name='category_list'),
-    path('Subcategories/', class_based_views.Subcategory_list.as_view(), name='subcategory_list'),
-    path('Spots/', class_based_views.Spot_details.as_view(), name='spot_list'),
+    path('', views.api_overview, name='api_overviews'),
+    path('Categories/', views.Category_list.as_view(), name='category_list'),
+    path('Categories/<int:pk>', views.Category_list.as_view(), name='category_delete'),
+    path('Subcategories/', views.Subcategory_list.as_view(), name='subcategory_list'),
+    path('Subcategories/<int:pk>', views.Subcategory_list.as_view(), name='subcategory_delete'),
+    path('Spots/', views.Spot_list.as_view(), name='spot_list'),
+    path('Spot/<int:pk>', views.Spot_detail.as_view(), name='spot_detail'),
 
 
     # Function based view
