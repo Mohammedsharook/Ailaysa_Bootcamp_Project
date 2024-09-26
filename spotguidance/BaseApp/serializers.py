@@ -2,7 +2,7 @@ from .models import Category, SubCategory, ForumComments, Spot, Review
 from rest_framework import serializers
 
 # Creating Custom Serializers
-# class CategorySerializers(serializers.ModelSerializer):
+# class CategorySerializers(serializers.Serializer):
 #     id = serializers.IntegerField(read_only = True)
 #     name = serializers.CharField(max_length=300)
 #     slug = serializers.CharField(required=False, allow_blank=True)
@@ -22,9 +22,7 @@ from rest_framework import serializers
 #         instance.slug = validated_data.get('slug', instance.slug)
 #         instance.save()
 #         return instance
-#     class Meta:
-#         model = Category
-#         fields = '__all__'
+
 
 
 # Creating Model Serializers
@@ -43,3 +41,13 @@ class SpotSerializers(serializers.ModelSerializer):
     class Meta:
         model = Spot
         fields = ['id', 'name', 'city', 'description', 'uploaded_by', 'sub_category', 'updated_at', 'created_at','visited_users']
+
+class ReviewSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        exclude = ['id']
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ForumComments
+        exclude = ['id']
