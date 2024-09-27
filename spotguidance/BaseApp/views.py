@@ -4,6 +4,7 @@ from .models import Category, SubCategory, Spot
 from .serializers import CategorySerializers, SubcategorySerializers, SpotSerializers
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 
 @api_view(['GET'])
 def api_overview(request):
@@ -83,6 +84,8 @@ class Subcategory_list(APIView):
             return Response({'Error': f'SubCategory with Id {pk} was Not Found'})
 
 class Spot_list(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, format=None):
         spots = Spot.objects.all()
         serializers = SpotSerializers(spots, many=True)
@@ -92,12 +95,14 @@ class Spot_list(APIView):
         data = request.data
         serializer = SpotSerializers(data=data)
         if serializer.is_valid():
-            serializer.save()
+            spot = serializer.save(uploaded_by=request.user)
+            spot.visited_users.add(request.user)
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
 
 class Spot_detail(APIView):
+    permission_classes = [IsAuthenticated]
     def get_object(self, pk):
         try:
             spot = get_object_or_404(Spot, id=pk)
@@ -115,6 +120,11 @@ class Spot_detail(APIView):
     def put(self, request, pk, format=None):
         spot = self.get_object(pk=pk)
         if spot:
+            visited_users = request.data.get('visited_users', [])
+            for user_id in visited_users:
+                if not spot.visited_users.filter(id=user_id).exists():
+                    spot.visited_users.add(user_id)
+
             serializer = SpotSerializers(spot, data = request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()

@@ -16,7 +16,6 @@ class Category(models.Model):
     def __str__(self) -> str:
         return self.name
 
-
 class SubCategory(models.Model):
     name = models.CharField(max_length=300)
     slug = models.SlugField(unique=True, blank=True)
@@ -32,7 +31,6 @@ class SubCategory(models.Model):
 
     def __str__(self) -> str:
         return self.name
-
 
 class Spot(models.Model):
     name = models.CharField(max_length=200)

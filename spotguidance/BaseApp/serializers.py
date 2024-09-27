@@ -18,7 +18,6 @@ class CategorySerializers(serializers.ModelSerializer):
 class SubcategorySerializers(serializers.ModelSerializer):
     category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), source='category')
     category_name = serializers.CharField(source='category.name', read_only=True)
-
     class Meta:
         model = SubCategory
         fields = ['id', 'name','category_id','category_name']
@@ -33,11 +32,23 @@ class SubcategorySerializers(serializers.ModelSerializer):
         return value
 
 class SpotSerializers(serializers.ModelSerializer):
-    category = serializers.CharField(source='sub_category.category.name', read_only=True)
+    posted_by = serializers.SerializerMethodField()
     class Meta:
         model = Spot
-        fields = ['id', 'name', 'city', 'description', 'average_rating', 'category', 'sub_category', 'uploaded_by', 'updated_at', 'created_at','visited_users']
-
+        fields = ['id', 'name', 'city', 'description', 'average_rating', 'sub_category','posted_by', 'updated_at', 'created_at', 'visited_users']
+    
+    def get_posted_by(self, obj):
+        return obj.uploaded_by.username
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['sub_category'] = {
+            'id': instance.sub_category.id,
+            'name': instance.sub_category.name
+        }
+        representation['category'] = instance.sub_category.category.name
+        return representation
+    
 class ReviewSerializers(serializers.ModelSerializer):
     class Meta:
         model = Review
