@@ -50,9 +50,12 @@ class SpotSerializers(serializers.ModelSerializer):
         return representation
     
 class ReviewSerializers(serializers.ModelSerializer):
+    reviewed_by = serializers.SerializerMethodField()
     class Meta:
         model = Review
-        exclude = ['id']
+        fields = ['rating', 'review_text', 'reviewed_by']
+    def get_reviewed_by(self, obj):
+        return obj.user.username
     
     def validate_rating(self, value):
         if value not in range(1,6):

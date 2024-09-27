@@ -1,10 +1,10 @@
 from rest_framework.decorators import api_view, APIView
 from rest_framework.decorators import APIView
 from .models import Category, SubCategory, Spot
-from .serializers import CategorySerializers, SubcategorySerializers, SpotSerializers
+from .serializers import CategorySerializers, SubcategorySerializers, SpotSerializers, ReviewSerializers
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 @api_view(['GET'])
 def api_overview(request):
@@ -12,6 +12,10 @@ def api_overview(request):
         'category-list': '/Categories',
         'subcategory-list': '/Subcategories',
         'spot-list': '/Spots',
+        'get-api-token': '/token',
+        'get-new-refresh-token': '/token/refresh',
+        'verify-token': '/token/verify',
+        'spot-review': '/Spot-review/<int:pk>'
     }
     return Response(apis)
 
@@ -120,6 +124,9 @@ class Spot_detail(APIView):
     def put(self, request, pk, format=None):
         spot = self.get_object(pk=pk)
         if spot:
+            if request.user != spot.uploaded_by:
+                return Response({'Error': 'You dont have permission to update this sopt !'})
+            
             visited_users = request.data.get('visited_users', [])
             for user_id in visited_users:
                 if not spot.visited_users.filter(id=user_id).exists():
@@ -138,7 +145,25 @@ class Spot_detail(APIView):
     def delete(self, request, pk, format=None):
         spot = self.get_object(pk=pk)
         if spot:
+            if request.user != spot.uploaded_by:
+                return Response({'Error': 'You dont have permission to delete this sopt !'})
             spot.delete()
             return Response({'Message': 'Spot deleted successfully !'})
         else:
             return Response({'Error': f'Spot with Id {pk} was Not Found'})
+
+class Spot_Review_list(APIView):
+    def get_object(self, pk):
+        try:
+            spot = get_object_or_404(Spot, id=pk)
+            return spot
+        except:
+            return None
+        
+    def get(self, request, pk, format=None):
+        spot = self.get_object(pk=pk)
+        if spot:
+            serializer = ReviewSerializers(spot.reviews.all(), many=True)
+            return Response(serializer.data)
+        else:
+            return Response({'Error': 'Spot not found !'})

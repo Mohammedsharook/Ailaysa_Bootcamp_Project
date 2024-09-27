@@ -9,6 +9,7 @@ urlpatterns = [
     path('Subcategories/<int:pk>', views.Subcategory_list.as_view(), name='subcategory_delete'),
     path('Spots/', views.Spot_list.as_view(), name='spot_list'),
     path('Spot/<int:pk>', views.Spot_detail.as_view(), name='spot_detail'),
+    path('Spot-review/<int:pk>', views.Spot_Review_list.as_view(), name='spot_reviews')
 
 
     # Function based view
